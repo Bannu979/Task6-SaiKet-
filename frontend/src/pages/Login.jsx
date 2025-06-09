@@ -9,23 +9,52 @@ const Login = () => {
     email: '',
     password: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return false;
+    }
+    if (!formData.email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
     try {
-      const apiUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/login`, {
+      const baseUrl = (import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+      console.log('Attempting login with API URL:', baseUrl);
+      
+      const response = await fetch(`${baseUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
-        credentials: 'include'
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+      
+      let data;
+      try {
+        const textResponse = await response.text();
+        console.log('Raw response:', textResponse);
+        data = JSON.parse(textResponse);
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        throw new Error('Invalid server response');
+      }
 
       if (response.ok) {
         login(data.token);
@@ -36,14 +65,20 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Network error. Please check your connection and try again.');
+      toast.error(
+        error.message === 'Invalid server response'
+          ? 'Server error. Please try again later.'
+          : 'Network error. Please check your connection and try again.'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value.trim(),
     });
   };
 
@@ -55,16 +90,9 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md p-4"
       >
-        <div className="card backdrop-blur-sm bg-white/90 dark:bg-gray-800/90 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1">
+        <div className="card backdrop-blur-sm bg-white/90 dark:bg-gray-800/90 shadow-2xl">
           <div className="text-center mb-8">
-            <motion.h2 
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-400 dark:to-primary-300"
-            >
-              Welcome back!
-            </motion.h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back!</h2>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
               Please sign in to your account
             </p>
@@ -80,10 +108,11 @@ const Login = () => {
                 name="email"
                 type="email"
                 required
-                className="input mt-1 transition-all duration-200 focus:scale-[1.02] hover:border-primary-400"
+                className="input mt-1"
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </div>
 
@@ -96,45 +125,27 @@ const Login = () => {
                 name="password"
                 type="password"
                 required
-                className="input mt-1 transition-all duration-200 focus:scale-[1.02] hover:border-primary-400"
+                className="input mt-1"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
+                disabled={isLoading}
               />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 transition-colors duration-200">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 transition-colors duration-200 hover:underline">
-                  Forgot password?
-                </a>
-              </div>
             </div>
 
             <button
               type="submit"
-              className="btn btn-primary w-full flex justify-center transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-95"
+              className="btn btn-primary w-full"
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 transition-colors duration-200 hover:underline">
+              <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
                 Sign up now
               </Link>
             </p>

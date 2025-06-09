@@ -10,19 +10,41 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+      toast.error('Please fill in all fields');
+      return false;
+    }
+    if (!formData.email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
+    if (!validateForm()) return;
 
+    setIsLoading(true);
+    
     try {
-      const apiUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/register`, {
+      const baseUrl = (import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+      console.log('Attempting registration with API URL:', baseUrl);
+      
+      const response = await fetch(`${baseUrl}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,10 +54,19 @@ const Register = () => {
           email: formData.email,
           password: formData.password,
         }),
-        credentials: 'include'
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+      
+      let data;
+      try {
+        const textResponse = await response.text();
+        console.log('Raw response:', textResponse);
+        data = JSON.parse(textResponse);
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError);
+        throw new Error('Invalid server response');
+      }
 
       if (response.ok) {
         toast.success('Registration successful! Please login.');
@@ -45,14 +76,20 @@ const Register = () => {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error('Network error. Please check your connection and try again.');
+      toast.error(
+        error.message === 'Invalid server response'
+          ? 'Server error. Please try again later.'
+          : 'Network error. Please check your connection and try again.'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value.trim(),
     });
   };
 
@@ -86,6 +123,8 @@ const Register = () => {
                 placeholder="Choose a username"
                 value={formData.username}
                 onChange={handleChange}
+                disabled={isLoading}
+                minLength={3}
               />
             </div>
 
@@ -102,6 +141,7 @@ const Register = () => {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </div>
 
@@ -118,6 +158,8 @@ const Register = () => {
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={handleChange}
+                disabled={isLoading}
+                minLength={6}
               />
             </div>
 
@@ -134,6 +176,8 @@ const Register = () => {
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                disabled={isLoading}
+                minLength={6}
               />
             </div>
 
@@ -159,9 +203,10 @@ const Register = () => {
 
             <button
               type="submit"
-              className="btn btn-primary w-full flex justify-center"
+              className="btn btn-primary w-full"
+              disabled={isLoading}
             >
-              Create Account
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 

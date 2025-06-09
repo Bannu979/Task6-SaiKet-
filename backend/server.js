@@ -4,13 +4,31 @@ import jwt from 'jsonwebtoken';
 
 const app = express();
 
-// Middleware
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://task6.vercel.app',
+  'https://task6-git-main.vercel.app',
+  'https://task6-yourname.vercel.app'  // Replace 'yourname' with your Vercel username
+];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : 'http://localhost:3000',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      console.log('Origin not allowed:', origin);
+      return callback(null, false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
 app.use(express.json());
 
 // Request logging middleware
@@ -60,70 +78,94 @@ const apiRouter = express.Router();
 
 // Test route
 apiRouter.get('/test', (req, res) => {
-  console.log('Test route hit');
-  res.json({ message: 'Server is working' });
+  try {
+    console.log('Test route hit');
+    res.json({ message: 'Server is working' });
+  } catch (error) {
+    console.error('Test route error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 });
 
 // Login route
 apiRouter.post('/login', (req, res) => {
-  console.log('Login route hit');
-  const { email, password } = req.body;
-  console.log('Login attempt:', { email, password });
-  
-  const user = users.find(u => u.email === email && u.password === password);
-  
-  if (!user) {
-    console.log('Login failed: Invalid credentials');
-    return res.status(401).json({ message: 'Invalid email or password' });
+  try {
+    console.log('Login route hit');
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    console.log('Login attempt:', { email, password });
+    
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (!user) {
+      console.log('Login failed: Invalid credentials');
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET || 'task6_secure_jwt_secret_key_2024_dashboard',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    );
+
+    console.log('Login successful for user:', user.id);
+    res.json({ 
+      user: { 
+        id: user.id,
+        username: user.username,
+        email: user.email
+      }, 
+      token 
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
-
-  const token = jwt.sign(
-    { id: user.id },
-    process.env.JWT_SECRET || 'your_jwt_secret',
-    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
-  );
-
-  console.log('Login successful for user:', user.id);
-  res.json({ 
-    user: { 
-      id: user.id,
-      username: user.username,
-      email: user.email
-    }, 
-    token 
-  });
 });
 
 // Register route
 apiRouter.post('/register', (req, res) => {
-  console.log('Register route hit');
-  const { username, email, password } = req.body;
-  
-  // Check if user already exists
-  const existingUser = users.find(u => u.email === email);
-  if (existingUser) {
-    return res.status(400).json({ message: 'User with this email already exists' });
-  }
-
-  // Create new user
-  const newUser = {
-    id: users.length + 1,
-    username,
-    email,
-    password,
-    settings: {
-      emailNotifications: true,
-      pushNotifications: false,
-      darkMode: false,
-      twoFactorAuth: false,
-      publicProfile: true
+  try {
+    console.log('Register route hit');
+    const { username, email, password } = req.body;
+    
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Username, email, and password are required' });
     }
-  };
 
-  users.push(newUser);
-  console.log('New user registered:', newUser.id);
-  
-  res.status(201).json({ message: 'Registration successful' });
+    // Check if user already exists
+    const existingUser = users.find(u => u.email === email);
+    if (existingUser) {
+      return res.status(400).json({ message: 'User with this email already exists' });
+    }
+
+    // Create new user
+    const newUser = {
+      id: users.length + 1,
+      username,
+      email,
+      password,
+      settings: {
+        emailNotifications: true,
+        pushNotifications: false,
+        darkMode: false,
+        twoFactorAuth: false,
+        publicProfile: true
+      }
+    };
+
+    users.push(newUser);
+    console.log('New user registered:', newUser.id);
+    
+    res.status(201).json({ message: 'Registration successful' });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 });
 
 // Middleware to verify JWT token
@@ -138,7 +180,10 @@ const auth = (req, res, next) => {
     }
 
     console.log('Token:', token);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    const decoded = jwt.verify(
+      token, 
+      process.env.JWT_SECRET || 'task6_secure_jwt_secret_key_2024_dashboard'
+    );
     console.log('Decoded token:', decoded);
     
     const user = users.find(u => u.id === decoded.id);
@@ -154,46 +199,56 @@ const auth = (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth Error:', error.message);
-    res.status(401).json({ message: 'Please authenticate' });
+    res.status(401).json({ message: 'Please authenticate', error: error.message });
   }
 };
 
 // Settings routes
 apiRouter.get('/settings', auth, (req, res) => {
-  console.log('Get settings route hit');
-  console.log('User:', req.user.id);
-  console.log('Settings:', req.user.settings);
-  res.json(req.user.settings);
+  try {
+    console.log('Get settings route hit');
+    console.log('User:', req.user.id);
+    console.log('Settings:', req.user.settings);
+    res.json(req.user.settings);
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 });
 
 apiRouter.put('/settings', auth, (req, res) => {
-  console.log('Update settings route hit');
-  console.log('User:', req.user.id);
-  console.log('New settings:', req.body);
+  try {
+    console.log('Update settings route hit');
+    console.log('User:', req.user.id);
+    console.log('New settings:', req.body);
 
-  const allowedSettings = [
-    'emailNotifications',
-    'pushNotifications',
-    'darkMode',
-    'twoFactorAuth',
-    'publicProfile'
-  ];
+    const allowedSettings = [
+      'emailNotifications',
+      'pushNotifications',
+      'darkMode',
+      'twoFactorAuth',
+      'publicProfile'
+    ];
 
-  const updates = Object.keys(req.body);
-  const isValidOperation = updates.every(update => allowedSettings.includes(update));
+    const updates = Object.keys(req.body);
+    const isValidOperation = updates.every(update => allowedSettings.includes(update));
 
-  if (!isValidOperation) {
-    console.log('Invalid settings update:', req.body);
-    return res.status(400).json({ message: 'Invalid settings!' });
+    if (!isValidOperation) {
+      console.log('Invalid settings update:', req.body);
+      return res.status(400).json({ message: 'Invalid settings!' });
+    }
+
+    req.user.settings = {
+      ...req.user.settings,
+      ...req.body
+    };
+
+    console.log('Updated settings:', req.user.settings);
+    res.json({ message: 'Settings updated successfully', settings: req.user.settings });
+  } catch (error) {
+    console.error('Update settings error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
-
-  req.user.settings = {
-    ...req.user.settings,
-    ...req.body
-  };
-
-  console.log('Updated settings:', req.user.settings);
-  res.json({ message: 'Settings updated successfully', settings: req.user.settings });
 });
 
 // Mount API routes
@@ -202,7 +257,10 @@ app.use('/api', apiRouter);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Global Error:', err);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  });
 });
 
 // 404 handler - must be last
