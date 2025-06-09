@@ -5,7 +5,12 @@ import jwt from 'jsonwebtoken';
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 
 // Request logging middleware
@@ -144,6 +149,38 @@ app.put('/settings', auth, (req, res) => {
   res.json({ message: 'Settings updated successfully', settings: req.user.settings });
 });
 
+// Register route
+app.post('/register', (req, res) => {
+  console.log('Register route hit');
+  const { username, email, password } = req.body;
+  
+  // Check if user already exists
+  const existingUser = users.find(u => u.email === email);
+  if (existingUser) {
+    return res.status(400).json({ message: 'User with this email already exists' });
+  }
+
+  // Create new user
+  const newUser = {
+    id: users.length + 1,
+    username,
+    email,
+    password,
+    settings: {
+      emailNotifications: true,
+      pushNotifications: false,
+      darkMode: false,
+      twoFactorAuth: false,
+      publicProfile: true
+    }
+  };
+
+  users.push(newUser);
+  console.log('New user registered:', newUser.id);
+  
+  res.status(201).json({ message: 'Registration successful' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Global Error:', err);
@@ -159,4 +196,5 @@ const server = app.listen(PORT, () => {
   console.log('- POST /login');
   console.log('- GET /settings');
   console.log('- PUT /settings');
+  console.log('- POST /register');
 }); 

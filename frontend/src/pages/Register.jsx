@@ -21,7 +21,8 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/register', {
+      const apiUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,19 +32,20 @@ const Register = () => {
           email: formData.email,
           password: formData.password,
         }),
+        credentials: 'include'
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        toast.success('Registration successful!');
-        navigate('/');
+        toast.success('Registration successful! Please login.');
+        navigate('/login');
       } else {
-        toast.error(data.message);
+        toast.error(data.message || 'Registration failed. Please try again.');
       }
     } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+      console.error('Registration error:', error);
+      toast.error('Network error. Please check your connection and try again.');
     }
   };
 
