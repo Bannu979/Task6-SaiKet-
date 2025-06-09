@@ -25,10 +25,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Test route
-app.get('/test', (req, res) => {
-  console.log('Test route hit');
-  res.json({ message: 'Server is working' });
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Task Management API is running',
+    endpoints: {
+      test: '/api/test',
+      login: '/api/login',
+      register: '/api/register',
+      settings: '/api/settings'
+    }
+  });
 });
 
 // In-memory storage
@@ -48,8 +55,17 @@ const users = [
   }
 ];
 
+// API Routes
+const apiRouter = express.Router();
+
+// Test route
+apiRouter.get('/test', (req, res) => {
+  console.log('Test route hit');
+  res.json({ message: 'Server is working' });
+});
+
 // Login route
-app.post('/login', (req, res) => {
+apiRouter.post('/login', (req, res) => {
   console.log('Login route hit');
   const { email, password } = req.body;
   console.log('Login attempt:', { email, password });
@@ -63,8 +79,8 @@ app.post('/login', (req, res) => {
 
   const token = jwt.sign(
     { id: user.id },
-    'your_jwt_secret',
-    { expiresIn: '24h' }
+    process.env.JWT_SECRET || 'your_jwt_secret',
+    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
   );
 
   console.log('Login successful for user:', user.id);
@@ -78,79 +94,8 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Middleware to verify JWT token
-const auth = (req, res, next) => {
-  try {
-    console.log('Auth middleware - checking token');
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      console.log('No token provided');
-      return res.status(401).json({ message: 'No token provided' });
-    }
-
-    console.log('Token:', token);
-    const decoded = jwt.verify(token, 'your_jwt_secret');
-    console.log('Decoded token:', decoded);
-    
-    const user = users.find(u => u.id === decoded.id);
-    console.log('Found user:', user ? 'Yes' : 'No');
-    
-    if (!user) {
-      console.log('User not found');
-      return res.status(401).json({ message: 'User not found' });
-    }
-
-    req.user = user;
-    console.log('Auth successful for user:', user.id);
-    next();
-  } catch (error) {
-    console.error('Auth Error:', error.message);
-    res.status(401).json({ message: 'Please authenticate' });
-  }
-};
-
-// Get settings
-app.get('/settings', auth, (req, res) => {
-  console.log('Get settings route hit');
-  console.log('User:', req.user.id);
-  console.log('Settings:', req.user.settings);
-  res.json(req.user.settings);
-});
-
-// Update settings
-app.put('/settings', auth, (req, res) => {
-  console.log('Update settings route hit');
-  console.log('User:', req.user.id);
-  console.log('New settings:', req.body);
-
-  const allowedSettings = [
-    'emailNotifications',
-    'pushNotifications',
-    'darkMode',
-    'twoFactorAuth',
-    'publicProfile'
-  ];
-
-  const updates = Object.keys(req.body);
-  const isValidOperation = updates.every(update => allowedSettings.includes(update));
-
-  if (!isValidOperation) {
-    console.log('Invalid settings update:', req.body);
-    return res.status(400).json({ message: 'Invalid settings!' });
-  }
-
-  req.user.settings = {
-    ...req.user.settings,
-    ...req.body
-  };
-
-  console.log('Updated settings:', req.user.settings);
-  res.json({ message: 'Settings updated successfully', settings: req.user.settings });
-});
-
 // Register route
-app.post('/register', (req, res) => {
+apiRouter.post('/register', (req, res) => {
   console.log('Register route hit');
   const { username, email, password } = req.body;
   
@@ -181,10 +126,88 @@ app.post('/register', (req, res) => {
   res.status(201).json({ message: 'Registration successful' });
 });
 
+// Middleware to verify JWT token
+const auth = (req, res, next) => {
+  try {
+    console.log('Auth middleware - checking token');
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      console.log('No token provided');
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+    console.log('Token:', token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    console.log('Decoded token:', decoded);
+    
+    const user = users.find(u => u.id === decoded.id);
+    console.log('Found user:', user ? 'Yes' : 'No');
+    
+    if (!user) {
+      console.log('User not found');
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    req.user = user;
+    console.log('Auth successful for user:', user.id);
+    next();
+  } catch (error) {
+    console.error('Auth Error:', error.message);
+    res.status(401).json({ message: 'Please authenticate' });
+  }
+};
+
+// Settings routes
+apiRouter.get('/settings', auth, (req, res) => {
+  console.log('Get settings route hit');
+  console.log('User:', req.user.id);
+  console.log('Settings:', req.user.settings);
+  res.json(req.user.settings);
+});
+
+apiRouter.put('/settings', auth, (req, res) => {
+  console.log('Update settings route hit');
+  console.log('User:', req.user.id);
+  console.log('New settings:', req.body);
+
+  const allowedSettings = [
+    'emailNotifications',
+    'pushNotifications',
+    'darkMode',
+    'twoFactorAuth',
+    'publicProfile'
+  ];
+
+  const updates = Object.keys(req.body);
+  const isValidOperation = updates.every(update => allowedSettings.includes(update));
+
+  if (!isValidOperation) {
+    console.log('Invalid settings update:', req.body);
+    return res.status(400).json({ message: 'Invalid settings!' });
+  }
+
+  req.user.settings = {
+    ...req.user.settings,
+    ...req.body
+  };
+
+  console.log('Updated settings:', req.user.settings);
+  res.json({ message: 'Settings updated successfully', settings: req.user.settings });
+});
+
+// Mount API routes
+app.use('/api', apiRouter);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Global Error:', err);
   res.status(500).json({ message: 'Something went wrong!' });
+});
+
+// 404 handler - must be last
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // Start server
@@ -192,9 +215,10 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log('Available routes:');
-  console.log('- GET /test');
-  console.log('- POST /login');
-  console.log('- GET /settings');
-  console.log('- PUT /settings');
-  console.log('- POST /register');
+  console.log('- GET /');
+  console.log('- GET /api/test');
+  console.log('- POST /api/login');
+  console.log('- POST /api/register');
+  console.log('- GET /api/settings');
+  console.log('- PUT /api/settings');
 }); 

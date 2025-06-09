@@ -21,7 +21,7 @@ const Register = () => {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000';
+      const apiUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
       const response = await fetch(`${apiUrl}/register`, {
         method: 'POST',
         headers: {
