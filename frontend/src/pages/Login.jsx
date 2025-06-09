@@ -34,7 +34,11 @@ const Login = () => {
     
     try {
       const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
-      console.log('Attempting login with API URL:', baseUrl);
+      // Debug logs
+      console.log('Environment Variables:', {
+        VITE_APP_API_URL: import.meta.env.VITE_APP_API_URL,
+        baseUrl: baseUrl
+      });
       
       const response = await fetch(`${baseUrl}/login`, {
         method: 'POST',

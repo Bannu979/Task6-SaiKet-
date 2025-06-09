@@ -8,9 +8,8 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  'https://task6-sai-ket-mre5.vercel.app',
-  'https://task6-git-main-sai-ket.vercel.app',
-  'https://task6-sai-ket.vercel.app'
+  'https://task6-sai-ket-hpbj.vercel.app',
+  'https://task6-git-main-sai-ket-hpbj.vercel.app'
 ];
 
 app.use(cors({

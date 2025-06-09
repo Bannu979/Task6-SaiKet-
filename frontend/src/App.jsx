@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -26,10 +26,11 @@ function App() {
           <div className="min-h-screen bg-gray-100/50 dark:bg-gray-900/50 transition-colors duration-200">
             <AnimatedBackground />
             <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route
-                path="/*"
+                path="/dashboard"
                 element={
                   <ProtectedRoute>
                     <div className="relative z-10">
@@ -37,18 +38,62 @@ function App() {
                       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
                       <main className="lg:pl-64 pt-16">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                          <Routes>
-                            <Route path="/" element={<Dashboard />} />
-                            <Route path="/users" element={<UserList />} />
-                            <Route path="/profile" element={<UserProfile />} />
-                            <Route path="/settings" element={<Settings />} />
-                          </Routes>
+                          <Dashboard />
                         </div>
                       </main>
                     </div>
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/users"
+                element={
+                  <ProtectedRoute>
+                    <div className="relative z-10">
+                      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+                      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                      <main className="lg:pl-64 pt-16">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                          <UserList />
+                        </div>
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <div className="relative z-10">
+                      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+                      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                      <main className="lg:pl-64 pt-16">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                          <UserProfile />
+                        </div>
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <div className="relative z-10">
+                      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+                      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                      <main className="lg:pl-64 pt-16">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                          <Settings />
+                        </div>
+                      </main>
+                    </div>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
             <Toaster position="top-right" />
             <ToastContainer
