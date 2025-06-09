@@ -8,9 +8,9 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  'https://task6.vercel.app',
-  'https://task6-git-main.vercel.app',
-  'https://task6-yourname.vercel.app'  // Replace 'yourname' with your Vercel username
+  'https://task6-sai-ket-mre5.vercel.app',
+  'https://task6-git-main-sai-ket.vercel.app',
+  'https://task6-sai-ket.vercel.app'
 ];
 
 app.use(cors({

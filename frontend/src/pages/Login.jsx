@@ -33,7 +33,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const baseUrl = (import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+      const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
       console.log('Attempting login with API URL:', baseUrl);
       
       const response = await fetch(`${baseUrl}/login`, {
@@ -41,6 +41,7 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
