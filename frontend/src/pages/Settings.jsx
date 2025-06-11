@@ -33,7 +33,8 @@ const Settings = () => {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/settings', {
+        const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${baseUrl}/settings`, {
           headers: {
             'Authorization': `Bearer ${user.token}`,
           },
@@ -42,13 +43,16 @@ const Settings = () => {
         if (response.ok) {
           const data = await response.json();
           setSettings(prev => ({
-            ...data,
+            ...prev,
+            ...data.settings,
             darkMode: isDarkMode // Always use the current theme state
           }));
         } else {
-          toast.error('Failed to load settings');
+          const errorData = await response.json();
+          toast.error(errorData.message || 'Failed to load settings');
         }
       } catch (error) {
+        console.error('Error loading settings:', error);
         toast.error('Failed to load settings');
       } finally {
         setIsLoading(false);
@@ -197,30 +201,30 @@ const Settings = () => {
 
             setIsSaving(true);
             try {
-              const response = await fetch('http://localhost:5000/settings', {
+              const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
+              const response = await fetch(`${baseUrl}/settings`, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${user.token}`,
                 },
-                body: JSON.stringify(settings),
+                body: JSON.stringify({ settings }),
               });
 
               if (response.ok) {
-                const data = await response.json();
-                setSettings(data.settings);
-                toast.success('Settings saved successfully!');
+                toast.success('Settings saved successfully');
               } else {
-                const data = await response.json();
-                toast.error(data.message || 'Failed to save settings');
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Failed to save settings');
               }
             } catch (error) {
-              toast.error('Something went wrong. Please try again.');
+              console.error('Error saving settings:', error);
+              toast.error('Failed to save settings');
             } finally {
               setIsSaving(false);
             }
           }}
-          disabled={isSaving || isLoading}
+          disabled={isSaving}
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
         </motion.button>
@@ -228,101 +232,55 @@ const Settings = () => {
 
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <motion.div
-            className="w-6 h-6 border-4 border-primary-500 border-t-transparent rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          />
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
         </div>
       ) : (
-        <motion.div 
-          className="space-y-8"
-          variants={container}
-        >
-          <AnimatePresence>
-            {settingsGroups.map((group, groupIndex) => (
-              <motion.div 
-                key={group.title} 
-                className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                variants={fadeInScale}
-                initial="hidden"
-                animate={inView ? "visible" : "hidden"}
-                transition={{ delay: groupIndex * 0.1 }}
-                whileHover={{ 
-                  y: -4,
-                  boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
-                  transition: { duration: 0.2 }
-                }}
-                layout
-              >
-                <motion.div 
-                  className="px-4 py-5 sm:px-6 flex items-center space-x-3"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: groupIndex * 0.1 }}
-                >
-                  <motion.div
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <group.icon className="h-6 w-6 text-primary-500" />
-                  </motion.div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">{group.title}</h3>
-                </motion.div>
-                <div className="border-t border-gray-200 dark:border-gray-700">
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {group.settings.map((setting, settingIndex) => (
-                      <motion.div 
-                        key={setting.name} 
-                        className="px-4 py-5 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ 
-                          delay: (groupIndex * 0.1) + (settingIndex * 0.05),
-                          type: "spring",
-                          stiffness: 100
-                        }}
-                        whileHover={{ x: 5 }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <motion.div 
-                            className="flex-1 min-w-0"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: (groupIndex * 0.1) + (settingIndex * 0.05) + 0.1 }}
-                          >
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white">{setting.label}</h4>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{setting.description}</p>
-                          </motion.div>
-                          <Switch
-                            checked={setting.current}
-                            onChange={() => handleToggle(setting.name)}
-                            className={`${
-                              setting.current ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-600'
-                            } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:ring-offset-gray-800`}
-                          >
-                            <span className="sr-only">Toggle {setting.label}</span>
-                            <motion.span
-                              className={`${
-                                setting.current ? 'translate-x-5' : 'translate-x-0'
-                              } pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                              layout
-                              transition={{
-                                type: "spring",
-                                stiffness: 700,
-                                damping: 30
-                              }}
-                            />
-                          </Switch>
-                        </div>
-                      </motion.div>
-                    ))}
+        <div className="grid grid-cols-1 gap-6">
+          {settingsGroups.map((group, groupIndex) => (
+            <motion.div
+              key={group.title}
+              className="card"
+              variants={fadeInScale}
+              initial="hidden"
+              animate={inView ? "visible" : "hidden"}
+              transition={{ delay: groupIndex * 0.1 }}
+            >
+              <div className="flex items-center mb-4">
+                <group.icon className="h-6 w-6 text-gray-400" />
+                <h2 className="ml-3 text-lg font-medium text-gray-900 dark:text-white">
+                  {group.title}
+                </h2>
+              </div>
+              <div className="space-y-4">
+                {group.settings.map((setting) => (
+                  <div key={setting.name} className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        {setting.label}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {setting.description}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={setting.current}
+                      onChange={() => handleToggle(setting.name)}
+                      className={`${
+                        setting.current ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2`}
+                    >
+                      <span
+                        className={`${
+                          setting.current ? 'translate-x-6' : 'translate-x-1'
+                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                      />
+                    </Switch>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
       )}
     </motion.div>
   );

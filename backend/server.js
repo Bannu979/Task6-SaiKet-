@@ -1,15 +1,31 @@
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import User from './models/User.js';
+
+dotenv.config();
 
 const app = express();
+
+// MongoDB Connection
+mongoose.connect('mongodb+srv://cherrymilky2020:bannu979@cluster0.pgvd2ic.mongodb.net/Saiket?retryWrites=true&w=majority&appName=Cluster0', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'https://task6-sai-ket-hpbj.vercel.app',
-  'https://task6-git-main-sai-ket-hpbj.vercel.app'
+  'https://task6-git-main-sai-ket-hpbj.vercel.app',
+  'https://task6-full-website.vercel.app',
+  'https://task6-full-website-git-main-sai-ket-hpbj.vercel.app'
 ];
 
 app.use(cors({
@@ -55,23 +71,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// In-memory storage
-const users = [
-  {
-    id: 1,
-    username: 'admin',
-    email: 'admin@example.com',
-    password: 'admin123',
-    settings: {
-      emailNotifications: true,
-      pushNotifications: false,
-      darkMode: false,
-      twoFactorAuth: false,
-      publicProfile: true
-    }
-  }
-];
-
 // API Routes
 const apiRouter = express.Router();
 
@@ -87,7 +86,7 @@ apiRouter.get('/test', (req, res) => {
 });
 
 // Login route
-apiRouter.post('/login', (req, res) => {
+apiRouter.post('/login', async (req, res) => {
   try {
     console.log('Login route hit');
     const { email, password } = req.body;
@@ -96,27 +95,34 @@ apiRouter.post('/login', (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    console.log('Login attempt:', { email, password });
+    console.log('Login attempt:', { email });
     
-    const user = users.find(u => u.email === email && u.password === password);
+    const user = await User.findOne({ email });
     
     if (!user) {
-      console.log('Login failed: Invalid credentials');
+      console.log('Login failed: User not found');
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      console.log('Login failed: Invalid password');
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const token = jwt.sign(
-      { id: user.id },
+      { id: user._id },
       process.env.JWT_SECRET || 'task6_secure_jwt_secret_key_2024_dashboard',
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
 
-    console.log('Login successful for user:', user.id);
+    console.log('Login successful for user:', user._id);
     res.json({ 
       user: { 
-        id: user.id,
+        id: user._id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        settings: user.settings
       }, 
       token 
     });
@@ -127,7 +133,7 @@ apiRouter.post('/login', (req, res) => {
 });
 
 // Register route
-apiRouter.post('/register', (req, res) => {
+apiRouter.post('/register', async (req, res) => {
   try {
     console.log('Register route hit');
     const { username, email, password } = req.body;
@@ -137,28 +143,20 @@ apiRouter.post('/register', (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = users.find(u => u.email === email);
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+      return res.status(400).json({ message: 'User with this email or username already exists' });
     }
 
     // Create new user
-    const newUser = {
-      id: users.length + 1,
+    const newUser = new User({
       username,
       email,
-      password,
-      settings: {
-        emailNotifications: true,
-        pushNotifications: false,
-        darkMode: false,
-        twoFactorAuth: false,
-        publicProfile: true
-      }
-    };
+      password
+    });
 
-    users.push(newUser);
-    console.log('New user registered:', newUser.id);
+    await newUser.save();
+    console.log('New user registered:', newUser._id);
     
     res.status(201).json({ message: 'Registration successful' });
   } catch (error) {
@@ -168,7 +166,7 @@ apiRouter.post('/register', (req, res) => {
 });
 
 // Middleware to verify JWT token
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   try {
     console.log('Auth middleware - checking token');
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -185,7 +183,7 @@ const auth = (req, res, next) => {
     );
     console.log('Decoded token:', decoded);
     
-    const user = users.find(u => u.id === decoded.id);
+    const user = await User.findById(decoded.id);
     console.log('Found user:', user ? 'Yes' : 'No');
     
     if (!user) {
@@ -194,58 +192,39 @@ const auth = (req, res, next) => {
     }
 
     req.user = user;
-    console.log('Auth successful for user:', user.id);
+    console.log('Auth successful for user:', user._id);
     next();
   } catch (error) {
     console.error('Auth Error:', error.message);
-    res.status(401).json({ message: 'Please authenticate', error: error.message });
+    res.status(401).json({ message: 'Invalid token' });
   }
 };
 
-// Settings routes
-apiRouter.get('/settings', auth, (req, res) => {
+// Get user settings
+apiRouter.get('/settings', auth, async (req, res) => {
   try {
-    console.log('Get settings route hit');
-    console.log('User:', req.user.id);
-    console.log('Settings:', req.user.settings);
-    res.json(req.user.settings);
+    res.json({ settings: req.user.settings });
   } catch (error) {
-    console.error('Get settings error:', error);
+    console.error('Settings fetch error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-apiRouter.put('/settings', auth, (req, res) => {
+// Update user settings
+apiRouter.put('/settings', auth, async (req, res) => {
   try {
-    console.log('Update settings route hit');
-    console.log('User:', req.user.id);
-    console.log('New settings:', req.body);
-
-    const allowedSettings = [
-      'emailNotifications',
-      'pushNotifications',
-      'darkMode',
-      'twoFactorAuth',
-      'publicProfile'
-    ];
-
-    const updates = Object.keys(req.body);
-    const isValidOperation = updates.every(update => allowedSettings.includes(update));
-
-    if (!isValidOperation) {
-      console.log('Invalid settings update:', req.body);
-      return res.status(400).json({ message: 'Invalid settings!' });
+    const { settings } = req.body;
+    
+    if (!settings) {
+      return res.status(400).json({ message: 'Settings object is required' });
     }
 
-    req.user.settings = {
-      ...req.user.settings,
-      ...req.body
-    };
-
-    console.log('Updated settings:', req.user.settings);
+    req.user.settings = { ...req.user.settings, ...settings };
+    await req.user.save();
+    
     res.json({ message: 'Settings updated successfully', settings: req.user.settings });
   } catch (error) {
-    console.error('Update settings error:', error);
+    console.error('Settings update error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -255,11 +234,8 @@ app.use('/api', apiRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Global Error:', err);
-  res.status(500).json({ 
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
-  });
+  console.error('Global error handler:', err);
+  res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
 // 404 handler - must be last

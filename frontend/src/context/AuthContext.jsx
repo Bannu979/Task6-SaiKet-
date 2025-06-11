@@ -11,22 +11,37 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
-    if (token) {
-      // You would typically validate the token with your backend here
-      setUser({ token });
+    const userData = localStorage.getItem('user');
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser({ ...parsedUser, token });
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
     setLoading(false);
   }, []);
 
-  const login = (token) => {
+  const login = (userData, token) => {
     localStorage.setItem('token', token);
-    setUser({ token });
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser({ ...userData, token });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
     navigate('/login');
+  };
+
+  const updateUser = (newUserData) => {
+    const updatedUser = { ...user, ...newUserData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
   };
 
   if (loading) {
@@ -34,7 +49,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

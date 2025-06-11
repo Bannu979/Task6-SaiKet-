@@ -17,6 +17,6 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "MONGODB_URI": "mongodb+srv://cherrymilky2020:bannu979@cluster0.pgvd2ic.mongodb.net/Saiket?retryWrites=true&w=majority&appName=Cluster0"
   }
 } 

@@ -45,7 +45,6 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
@@ -62,7 +61,7 @@ const Login = () => {
       }
 
       if (response.ok) {
-        login(data.token);
+        login(data.user, data.token);
         toast.success('Login successful!');
         navigate('/');
       } else {
