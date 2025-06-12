@@ -26,7 +26,7 @@ function App() {
           <div className="min-h-screen bg-gray-100/50 dark:bg-gray-900/50 transition-colors duration-200">
             <AnimatedBackground />
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route
