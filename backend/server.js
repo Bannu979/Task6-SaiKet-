@@ -10,23 +10,19 @@ import User from './models/User.js';
 
 const app = express();
 
-// CORS configuration
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  // Allow all Vercel.app domains and localhost
-  if (origin && (origin.endsWith('.vercel.app') || origin.startsWith('http://localhost'))) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
+// Basic middleware
+app.use(express.json());
 
-  // Handle preflight requests
+// Simple CORS middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
+  
   next();
 });
 
@@ -46,8 +42,6 @@ const connectDB = async () => {
 
 // Connect to MongoDB
 connectDB();
-
-app.use(express.json());
 
 // Request logging middleware
 app.use((req, res, next) => {
