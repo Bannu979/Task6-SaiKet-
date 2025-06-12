@@ -13,11 +13,11 @@ const app = express();
 // Basic middleware
 app.use(express.json());
 
-// CORS middleware - allow all origins
+// CORS middleware
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'https://task6-sai-ket-n9wj.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   // Handle preflight
   if (req.method === 'OPTIONS') {
