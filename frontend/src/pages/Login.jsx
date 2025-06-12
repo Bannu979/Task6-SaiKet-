@@ -33,14 +33,14 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       // Debug logs
       console.log('Environment Variables:', {
         VITE_API_URL: import.meta.env.VITE_API_URL,
         baseUrl: baseUrl
       });
       
-      const response = await fetch(`${baseUrl}/login`, {
+      const response = await fetch(`${baseUrl}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

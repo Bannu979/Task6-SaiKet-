@@ -41,10 +41,10 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       console.log('Attempting registration with API URL:', baseUrl);
       
-      const response = await fetch(`${baseUrl}/register`, {
+      const response = await fetch(`${baseUrl}/api/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
