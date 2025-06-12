@@ -48,14 +48,13 @@ const Register = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
-          password: formData.password,
-        }),
-        credentials: 'include'
+          password: formData.password
+        })
       });
 
       console.log('Response status:', response.status);
