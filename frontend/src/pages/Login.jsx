@@ -33,10 +33,10 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       // Debug logs
       console.log('Environment Variables:', {
-        VITE_APP_API_URL: import.meta.env.VITE_APP_API_URL,
+        VITE_API_URL: import.meta.env.VITE_API_URL,
         baseUrl: baseUrl
       });
       
@@ -44,8 +44,10 @@ const Login = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify(formData),
+        credentials: 'include'
       });
 
       console.log('Response status:', response.status);
