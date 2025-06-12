@@ -1,46 +1,35 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import dotenv from 'dotenv';
 import User from './models/User.js';
-
-dotenv.config();
 
 const app = express();
 
 // MongoDB Connection
-mongoose.connect('mongodb+srv://cherrymilky2020:bannu979@cluster0.pgvd2ic.mongodb.net/Saiket?retryWrites=true&w=majority&appName=Cluster0', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch((err) => console.error('MongoDB connection error:', err));
+const connectDB = async () => {
+  try {
+    const MONGODB_URI = 'mongodb+srv://cherrymilky2020:bannu979@cluster0.pgvd2ic.mongodb.net/Saiket?retryWrites=true&w=majority&appName=Cluster0';
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ MongoDB Connected Successfully');
+  } catch (error) {
+    console.error('❌ MongoDB Connection Error:', error.message);
+    // Retry connection after 5 seconds
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectDB, 5000);
+  }
+};
+
+// Connect to MongoDB
+connectDB();
 
 // CORS configuration
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://task6-sai-ket-hpbj.vercel.app',
-  'https://task6-git-main-sai-ket-hpbj.vercel.app',
-  'https://task6-full-website.vercel.app',
-  'https://task6-full-website-git-main-sai-ket-hpbj.vercel.app'
-];
-
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      console.log('Origin not allowed:', origin);
-      return callback(null, false);
-    }
-    return callback(null, true);
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: ['http://localhost:3000', 'https://task6-full-website.vercel.app'],
   credentials: true
 }));
 
@@ -254,4 +243,5 @@ const server = app.listen(PORT, () => {
   console.log('- POST /api/register');
   console.log('- GET /api/settings');
   console.log('- PUT /api/settings');
+  console.log('connected to db')
 }); 

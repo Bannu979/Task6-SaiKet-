@@ -1,13 +1,9 @@
 {
   "framework": "vite",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "routes": [
     {
-      "src": "/[^.]+",
-      "dest": "/",
-      "status": 200
+      "source": "/api/:path*",
+      "destination": "https://task6-full-website-backend.vercel.app/api/:path*"
     }
   ],
   "buildCommand": "npm run build",
@@ -24,5 +20,9 @@
         }
       ]
     }
-  ]
+  ],
+  "cleanUrls": true,
+  "env": {
+    "VITE_API_URL": "https://task6-full-website-backend.vercel.app"
+  }
 } 
