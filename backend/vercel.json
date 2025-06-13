@@ -1,26 +1,20 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
+      {
+          "src": "server.js",
+          "use": "@vercel/node",
+          "config": {
+              "includeFiles": [
+                  "dist/**"
+              ]
+          }
+      }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server.js",
-      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      "headers": {
-        "Access-Control-Allow-Origin": "https://task6-sai-ket-n9wj.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      {
+          "src": "/(.*)",
+          "dest": "server.js"
       }
-    }
-  ],
-  "env": {
-    "MONGODB_URI": "mongodb+srv://cherrymilky2020:bannu979@cluster0.pgvd2ic.mongodb.net/Saiket?retryWrites=true&w=majority&appName=Cluster0",
-    "JWT_SECRET": "task6_secure_jwt_secret_key_2024_dashboard",
-    "JWT_EXPIRES_IN": "24h"
-  }
-} 
+  ]
+}
