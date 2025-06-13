@@ -33,11 +33,16 @@ const Settings = () => {
       }
 
       try {
-        const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
-        const response = await fetch(`${baseUrl}/settings`, {
+        const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+        const response = await fetch(`${baseUrl}/api/settings`, {
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${user.token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
+          credentials: 'include',
+          mode: 'cors'
         });
 
         if (response.ok) {
@@ -201,14 +206,17 @@ const Settings = () => {
 
             setIsSaving(true);
             try {
-              const baseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api';
-              const response = await fetch(`${baseUrl}/settings`, {
+              const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+              const response = await fetch(`${baseUrl}/api/settings`, {
                 method: 'PUT',
                 headers: {
-                  'Content-Type': 'application/json',
                   'Authorization': `Bearer ${user.token}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
                 },
-                body: JSON.stringify({ settings }),
+                credentials: 'include',
+                mode: 'cors',
+                body: JSON.stringify({ settings })
               });
 
               if (response.ok) {
