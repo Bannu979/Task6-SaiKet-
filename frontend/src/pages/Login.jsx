@@ -33,7 +33,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
       // Debug logs
       console.log('Environment Variables:', {
         VITE_API_URL: import.meta.env.VITE_API_URL,
@@ -43,13 +43,16 @@ const Login = () => {
       const response = await fetch(`${baseUrl}/api/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         credentials: 'include',
+        mode: 'cors',
         body: JSON.stringify(formData)
       });
 
       console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       let data;
       try {

@@ -15,15 +15,16 @@ app.use(express.json());
 
 // CORS middleware
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://task6-sai-ket-px3t.vercel.app',
-    'https://task6-sai-ket.vercel.app'
-  ],
+  origin: true, // Allow all origins in development
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Add OPTIONS handler for preflight requests
+app.options('*', cors());
 
 // MongoDB Connection
 const connectDB = async () => {
