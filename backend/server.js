@@ -13,18 +13,12 @@ const app = express();
 // Basic middleware
 app.use(express.json());
 
-// CORS middleware
+// CORS middleware - simple configuration
 app.use(cors({
-  origin: true, // Allow all origins in development
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Add OPTIONS handler for preflight requests
-app.options('*', cors());
 
 // MongoDB Connection
 const connectDB = async () => {
