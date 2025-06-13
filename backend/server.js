@@ -13,12 +13,16 @@ const app = express();
 // Basic middleware
 app.use(express.json());
 
-// CORS middleware - simple configuration
+// CORS middleware - specific configuration
 app.use(cors({
-  origin: '*',
+  origin: ['http://localhost:5173', 'https://task6-sai-ket-px3t.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // MongoDB Connection
 const connectDB = async () => {
