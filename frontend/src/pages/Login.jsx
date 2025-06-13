@@ -67,7 +67,9 @@ const Login = () => {
       if (response.ok) {
         login(data.user, data.token);
         toast.success('Login successful!');
-        navigate('/');
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 1000);
       } else {
         toast.error(data.message || 'Login failed. Please check your credentials.');
       }
