@@ -208,12 +208,12 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 py-6 animate-gradient-x">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-6 animate-gradient-x">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="mt-2 text-sm text-gray-700">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
             Overview of your task management system
           </p>
       </div>
@@ -221,17 +221,17 @@ const Dashboard = () => {
       {/* Stats Grid */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {stats.map((stat) => (
-            <div key={stat.name} className="card bg-white overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
-              <div className="p-5 bg-gradient-to-r from-white to-gray-50">
+            <div key={stat.name} className="card bg-white dark:bg-gray-800 overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+              <div className="p-5 bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-700">
               <div className="flex items-center">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-500 truncate">{stat.name}</p>
-                    <p className="mt-1 text-3xl font-bold text-gray-900 tracking-tight">{stat.value}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{stat.name}</p>
+                    <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{stat.value}</p>
                   </div>
                   <div className={`ml-3 flex items-center text-sm font-medium px-2.5 py-0.5 rounded-full ${
                     stat.changeType === 'increase' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                   } transition-colors duration-200`}>
                     {stat.change}
                   </div>
@@ -244,16 +244,23 @@ const Dashboard = () => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 mb-8">
           {/* Task Progress Chart */}
-          <div className="card bg-white overflow-hidden">
+          <div className="card bg-white dark:bg-gray-800 overflow-hidden">
             <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Task Progress Overview</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Task Progress Overview</h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={taskProgressData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="month" stroke="#9CA3AF" />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1F2937',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        color: '#F3F4F6'
+                      }}
+                    />
                     <Legend />
                     <Area type="monotone" dataKey="completed" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.6} name="Completed" />
                     <Area type="monotone" dataKey="active" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} name="Active" />
@@ -265,16 +272,23 @@ const Dashboard = () => {
                 </div>
 
           {/* User Activity Chart */}
-          <div className="card bg-white overflow-hidden">
+          <div className="card bg-white dark:bg-gray-800 overflow-hidden">
             <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Weekly User Activity</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Weekly User Activity</h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={userActivityData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="day" stroke="#9CA3AF" />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1F2937',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        color: '#F3F4F6'
+                      }}
+                    />
                     <Legend />
                     <Bar dataKey="tasks" fill="#6366F1" name="Tasks Completed" />
                   </BarChart>
@@ -284,16 +298,23 @@ const Dashboard = () => {
           </div>
 
           {/* Task Distribution Chart */}
-          <div className="card bg-white overflow-hidden">
+          <div className="card bg-white dark:bg-gray-800 overflow-hidden">
             <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Task Distribution</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Task Distribution</h2>
               <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={taskDistributionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="name" stroke="#9CA3AF" />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1F2937',
+                        border: 'none',
+                        borderRadius: '0.5rem',
+                        color: '#F3F4F6'
+                      }}
+                    />
                     <Legend />
                     <Line type="monotone" dataKey="value" stroke="#8B5CF6" strokeWidth={2} name="Tasks" />
               </LineChart>
@@ -303,45 +324,45 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Tasks */}
-          <div className="card bg-white overflow-hidden">
+          <div className="card bg-white dark:bg-gray-800 overflow-hidden">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Recent Tasks</h2>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Tasks</h2>
                 <Link to="/tasks?tab=tasks" className="btn btn-primary text-sm">View all</Link>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead>
                     <tr>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignee</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Task</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Priority</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Assignee</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {recentTasks.map((task) => (
-                      <tr key={task.id} className="hover:bg-gray-50 transition-colors duration-200">
-                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{task.title}</td>
+                      <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{task.title}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm">
                           <span className={`status-badge ${
-                            task.status === 'Completed' ? 'status-active' :
-                            task.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                            'status-inactive'
+                            task.status === 'Completed' ? 'status-active dark:bg-green-900/30 dark:text-green-300' :
+                            task.status === 'In Progress' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                            'status-inactive dark:bg-red-900/30 dark:text-red-300'
                           }`}>
                             {task.status}
                           </span>
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            task.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                            task.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                            'bg-blue-100 text-blue-800'
+                            task.priority === 'Critical' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' :
+                            task.priority === 'High' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300' :
+                            'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
                           }`}>
                             {task.priority}
                           </span>
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{task.assignee}</td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{task.assignee}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -353,10 +374,10 @@ const Dashboard = () => {
 
         {/* Recent Activity */}
         <div className="grid grid-cols-1 gap-8 mb-8">
-          <div className="card bg-white overflow-hidden">
+          <div className="card bg-white dark:bg-gray-800 overflow-hidden">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Activity</h2>
                 <Link to="/tasks?tab=activities" className="btn btn-secondary text-sm">View all</Link>
               </div>
               <div className="flow-root">
@@ -365,11 +386,11 @@ const Dashboard = () => {
                     <li key={activity.id}>
                       <div className="relative pb-8">
                         {activityIdx !== recentActivity.length - 1 ? (
-                          <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
+                          <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
                         ) : null}
                         <div className="relative flex space-x-3">
                           <div>
-                            <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                            <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white dark:ring-gray-800">
                               <span className="text-sm font-medium text-white">
                                 {activity.user.charAt(0)}
                               </span>
@@ -377,13 +398,13 @@ const Dashboard = () => {
                           </div>
                           <div className="min-w-0 flex-1 flex justify-between space-x-4 pt-1.5">
                             <div>
-                              <p className="text-sm text-gray-500">
-                                <span className="font-medium text-gray-900">{activity.user}</span>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <span className="font-medium text-gray-900 dark:text-white">{activity.user}</span>
                                 {' '}{activity.action}{' '}
-                                <span className="font-medium text-gray-900">{activity.task}</span>
+                                <span className="font-medium text-gray-900 dark:text-white">{activity.task}</span>
                               </p>
                             </div>
-                            <div className="text-right text-sm whitespace-nowrap text-gray-500">
+                            <div className="text-right text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                               {activity.time}
                             </div>
                           </div>
@@ -399,9 +420,9 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="mt-8">
-          <div className="card bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <div className="card bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <button
                   onClick={() => setIsNewTaskModalOpen(true)}
@@ -414,7 +435,7 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => navigate('/users')}
-                  className="btn bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200"
+                  className="btn bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -423,7 +444,7 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => setIsGenerateReportModalOpen(true)}
-                  className="btn bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200"
+                  className="btn bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -432,7 +453,7 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => navigate('/settings')}
-                  className="btn bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200"
+                  className="btn bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -450,13 +471,13 @@ const Dashboard = () => {
       {isNewTaskModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setIsNewTaskModalOpen(false)} />
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" onClick={() => setIsNewTaskModalOpen(false)} />
             
-            <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-lg sm:p-6">
+            <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-lg sm:p-6">
               <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                 <button
                   type="button"
-                  className="rounded-md bg-white text-gray-400 hover:text-gray-500"
+                  className="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
                   onClick={() => setIsNewTaskModalOpen(false)}
                 >
                   <span className="sr-only">Close</span>
@@ -468,40 +489,40 @@ const Dashboard = () => {
 
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 w-full text-center sm:mt-0 sm:text-left">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Create New Task</h3>
+                  <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Create New Task</h3>
                   <form onSubmit={handleNewTask} className="space-y-4">
                     <div>
-                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Title
                       </label>
                       <input
                         type="text"
                         id="title"
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         value={newTaskForm.title}
                         onChange={(e) => setNewTaskForm({ ...newTaskForm, title: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Description
                       </label>
                       <textarea
                         id="description"
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         value={newTaskForm.description}
                         onChange={(e) => setNewTaskForm({ ...newTaskForm, description: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Priority
                       </label>
                       <select
                         id="priority"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         value={newTaskForm.priority}
                         onChange={(e) => setNewTaskForm({ ...newTaskForm, priority: e.target.value })}
                       >
@@ -512,13 +533,13 @@ const Dashboard = () => {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="assignee" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Assignee
                       </label>
                       <input
                         type="text"
                         id="assignee"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         value={newTaskForm.assignee}
                         onChange={(e) => setNewTaskForm({ ...newTaskForm, assignee: e.target.value })}
                       />
@@ -550,13 +571,13 @@ const Dashboard = () => {
       {isGenerateReportModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setIsGenerateReportModalOpen(false)} />
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" onClick={() => setIsGenerateReportModalOpen(false)} />
             
-            <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-lg sm:p-6">
+            <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-lg sm:p-6">
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 w-full text-center sm:mt-0 sm:text-left">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Generate Report</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Generate Report</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                     Select the type of report you want to generate.
                   </p>
                   <div className="space-y-4">

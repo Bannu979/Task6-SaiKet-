@@ -15,12 +15,19 @@ app.use(express.json());
 
 // CORS middleware - specific configuration
 app.use(cors({
-  origin: true, // Allow all origins in development
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  origin: 'http://localhost:3000',
   credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Methods'
+  ]
 }));
 
 // Handle preflight requests
@@ -166,10 +173,19 @@ apiRouter.post('/register', async (req, res) => {
 const auth = async (req, res, next) => {
   try {
     console.log('Auth middleware - checking token');
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const authHeader = req.header('Authorization');
+    
+    if (!authHeader) {
+      console.log('No Authorization header');
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const token = authHeader.startsWith('Bearer ') 
+      ? authHeader.substring(7) 
+      : authHeader;
     
     if (!token) {
-      console.log('No token provided');
+      console.log('No token found in Authorization header');
       return res.status(401).json({ message: 'No token provided' });
     }
 
@@ -193,36 +209,82 @@ const auth = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth Error:', error.message);
-    res.status(401).json({ message: 'Invalid token' });
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired' });
+    }
+    res.status(401).json({ message: 'Authentication failed' });
   }
 };
 
-// Get user settings
-apiRouter.get('/settings', auth, async (req, res) => {
+// Settings endpoints
+app.get('/api/settings', auth, async (req, res) => {
   try {
-    res.json({ settings: req.user.settings });
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Return user settings or default settings if none exist
+    const settings = user.settings || {
+      theme: 'light',
+      notifications: {
+        email: true,
+        push: true
+      },
+      privacy: {
+        profileVisibility: true,
+        activityTracking: true
+      }
+    };
+
+    res.json(settings);
   } catch (error) {
-    console.error('Settings fetch error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error fetching settings:', error);
+    res.status(500).json({ message: 'Error fetching settings' });
   }
 });
 
-// Update user settings
-apiRouter.put('/settings', auth, async (req, res) => {
+app.put('/api/settings', auth, async (req, res) => {
   try {
-    const { settings } = req.body;
-    
-    if (!settings) {
-      return res.status(400).json({ message: 'Settings object is required' });
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    req.user.settings = { ...req.user.settings, ...settings };
-    await req.user.save();
-    
-    res.json({ message: 'Settings updated successfully', settings: req.user.settings });
+    const { theme, notifications, privacy } = req.body;
+
+    // Validate the incoming data
+    if (!theme || !notifications || !privacy) {
+      return res.status(400).json({ 
+        message: 'Invalid settings data',
+        details: 'Settings must include theme, notifications, and privacy fields'
+      });
+    }
+
+    // Update user settings
+    user.settings = {
+      theme,
+      notifications: {
+        email: notifications.email ?? true,
+        push: notifications.push ?? true
+      },
+      privacy: {
+        profileVisibility: privacy.profileVisibility ?? true,
+        activityTracking: privacy.activityTracking ?? true
+      }
+    };
+
+    await user.save();
+    res.json(user.settings);
   } catch (error) {
-    console.error('Settings update error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error updating settings:', error);
+    res.status(500).json({ 
+      message: 'Error updating settings',
+      details: error.message 
+    });
   }
 });
 

@@ -16,12 +16,22 @@ import { Toaster } from 'react-hot-toast';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Tasks from './pages/Tasks';
+import Notifications from './pages/Notifications';
+import { UNSAFE_NavigationContext as NavigationContext } from 'react-router-dom';
+
+// Create a custom router with future flags
+const router = {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  }
+};
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <Router>
+    <Router future={router.future}>
       <AuthProvider>
         <ThemeProvider>
           <div className="min-h-screen bg-gray-100/50 dark:bg-gray-900/50 transition-colors duration-200">
@@ -99,6 +109,7 @@ function App() {
                 }
               />
               <Route path="/tasks" element={<Tasks />} />
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
             <Toaster position="top-right" />

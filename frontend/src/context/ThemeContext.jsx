@@ -1,21 +1,34 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const ThemeContext = createContext(null);
+const ThemeContext = createContext();
+
+export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check local storage first
+    // Check if user has a saved preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       return savedTheme === 'dark';
     }
-    // If no saved theme, check system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Check if user has system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // On mobile devices, default to light mode
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      return false;
+    }
+    
+    return prefersDark;
   });
 
   useEffect(() => {
-    // Update local storage and document class when theme changes
+    // Update localStorage when theme changes
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    
+    // Update document class
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -24,7 +37,7 @@ export const ThemeProvider = ({ children }) => {
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode(!isDarkMode);
   };
 
   return (
@@ -32,12 +45,4 @@ export const ThemeProvider = ({ children }) => {
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
 }; 

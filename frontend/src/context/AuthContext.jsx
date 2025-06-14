@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
       setUser({ ...userData, token });
+      toast.success('Login successful');
     } catch (error) {
       console.error('Error saving user data:', error);
       toast.error('Error saving login information');
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
+      toast.success('Logged out successfully');
     } catch (error) {
       console.error('Error during logout:', error);
     }
@@ -56,13 +58,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   // Add a function to check if the token is valid
   const isAuthenticated = () => {
     return !!user && !!user.token;
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
   }
 
   return (
@@ -71,7 +82,8 @@ export const AuthProvider = ({ children }) => {
       login, 
       logout, 
       updateUser,
-      isAuthenticated 
+      isAuthenticated,
+      getAuthHeader
     }}>
       {children}
     </AuthContext.Provider>

@@ -117,12 +117,8 @@ const Navbar = ({ onMenuClick }) => {
   };
 
   const handleNotificationClick = (notification) => {
-    if (notification.unread) {
-      setUnreadCount(prev => Math.max(0, prev - 1));
-      // Here you would typically make an API call to mark the notification as read
-    }
+    navigate(`/notifications?id=${notification.id}`);
     setShowNotifications(false);
-    navigate(notification.link);
   };
 
   const handleLogout = () => {
@@ -285,82 +281,105 @@ const Navbar = ({ onMenuClick }) => {
         {/* Right section */}
         <div className="flex items-center space-x-4">
           {/* Notifications */}
-          <div className="relative" ref={notificationRef}>
-            <motion.button
-              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 relative"
-              whileHover="hover"
-              whileTap="tap"
-              variants={iconVariants}
+          <div className="relative">
+            <button
               onClick={() => setShowNotifications(!showNotifications)}
-              aria-label={`Notifications (${unreadCount} unread)`}
+              className="relative p-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus:outline-none"
             >
-              <BellIcon className="h-6 w-6" />
-              {unreadCount > 0 && (
-                <motion.span
-                  className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30
-                  }}
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                 />
+              </svg>
+              {notifications.length > 0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                  {notifications.length}
+                </span>
               )}
-            </motion.button>
+            </button>
 
-            <AnimatePresence>
-              {showNotifications && (
-                <motion.div
-                  className="absolute right-0 mt-2 w-80 rounded-lg shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 focus:outline-none"
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20
-                  }}
-                >
-                  <div className="p-4">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Notifications</h3>
-                    <div className="mt-4 space-y-3">
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50 transform origin-top-right transition-all duration-200 ease-out">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                      No new notifications
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                       {notifications.map((notification) => (
-                        <motion.div
-                          key={notification.id}
-                          className={`p-3 rounded-lg transition-colors duration-200 cursor-pointer
-                            ${notification.unread
-                              ? 'bg-primary-50 dark:bg-primary-900/20'
-                              : 'bg-gray-50 dark:bg-gray-700/50'
-                            } hover:bg-gray-100 dark:hover:bg-gray-700`}
+                        <div
+                          key={notification._id}
                           onClick={() => handleNotificationClick(notification)}
-                          whileHover={{ x: 5 }}
-                          variants={notificationVariants}
+                          className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150 ${
+                            !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                          }`}
                         >
                           <div className="flex items-start">
-                            <div className="flex-1">
-                              <p className={`text-sm font-medium ${
-                                notification.unread
-                                  ? 'text-primary-900 dark:text-primary-100'
-                                  : 'text-gray-900 dark:text-gray-100'
-                              }`}>
+                            <div className="flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                <svg
+                                  className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="ml-3 flex-1">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {notification.title}
                               </p>
                               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 {notification.message}
                               </p>
                               <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                                {notification.time}
+                                {new Date(notification.createdAt).toLocaleString()}
                               </p>
                             </div>
+                            {!notification.read && (
+                              <div className="ml-2">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                  New
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
+                  )}
+                </div>
+                {notifications.length > 0 && (
+                  <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => navigate('/notifications')}
+                      className="w-full text-center text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      View all notifications
+                    </button>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+              </div>
+            )}
           </div>
 
           {/* User menu */}
