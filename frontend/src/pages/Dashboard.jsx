@@ -307,7 +307,7 @@ const Dashboard = () => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-medium text-gray-900">Recent Tasks</h2>
-                <Link to="/tasks" className="btn btn-primary text-sm">View all</Link>
+                <Link to="/tasks?tab=tasks" className="btn btn-primary text-sm">View all</Link>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -357,7 +357,7 @@ const Dashboard = () => {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
-                <button className="btn btn-secondary text-sm">View all</button>
+                <Link to="/tasks?tab=activities" className="btn btn-secondary text-sm">View all</Link>
               </div>
               <div className="flow-root">
                 <ul className="-mb-8">

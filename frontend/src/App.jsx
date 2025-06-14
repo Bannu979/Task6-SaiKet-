@@ -15,6 +15,7 @@ import AnimatedBackground from './components/AnimatedBackground';
 import { Toaster } from 'react-hot-toast';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Tasks from './pages/Tasks';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -97,6 +98,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/tasks" element={<Tasks />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
             <Toaster position="top-right" />
