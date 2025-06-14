@@ -56,10 +56,34 @@ const Tasks = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Tasks & Activities</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            View and manage all tasks and activities
-          </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              aria-label="Back to Dashboard"
+            >
+              <svg
+                className="w-6 h-6 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+            </button>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Tasks & Activities</h1>
+              <p className="mt-2 text-sm text-gray-700">
+                View and manage all tasks and activities
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}
