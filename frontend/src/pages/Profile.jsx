@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { CameraIcon, UserIcon } from '@heroicons/react/outline';
+import { UserIcon } from '@heroicons/react/outline';
 import toast from 'react-hot-toast';
 
 const Profile = () => {
@@ -11,6 +11,7 @@ const Profile = () => {
     profilePicture: '',
   });
   const [isEditing, setIsEditing] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchUserProfile();
@@ -31,6 +32,54 @@ const Profile = () => {
       }
     } catch (error) {
       toast.error('Failed to load profile');
+    }
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/users/profile/picture', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(prev => ({
+          ...prev,
+          profilePicture: data.profilePicture
+        }));
+        toast.success('Profile picture updated successfully');
+      } else {
+        throw new Error('Failed to update profile picture');
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to update profile picture');
     }
   };
 
@@ -75,7 +124,7 @@ const Profile = () => {
       >
         <div className="card">
           <div className="text-center mb-8">
-            <div className="relative inline-block">
+            <div className="relative inline-block group">
               {user.profilePicture ? (
                 <img
                   src={user.profilePicture}
@@ -87,9 +136,26 @@ const Profile = () => {
                   <UserIcon className="h-16 w-16 text-gray-400 dark:text-gray-500" />
                 </div>
               )}
-              <button className="absolute bottom-0 right-0 p-2 bg-primary-600 rounded-full text-white hover:bg-primary-700 transition-colors">
-                <CameraIcon className="h-5 w-5" />
+              <button 
+                onClick={handleImageClick}
+                className="absolute bottom-0 right-0 p-2 bg-primary-600 rounded-full text-white hover:bg-primary-700 transition-colors"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-5 w-5" 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor"
+                >
+                  <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
               </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
             <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">{user.username}</h2>
             <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
