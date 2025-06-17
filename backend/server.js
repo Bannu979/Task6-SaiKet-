@@ -15,7 +15,7 @@ app.use(express.json());
 
 // CORS middleware - specific configuration
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'https://task6-sai-ket-o4so.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
