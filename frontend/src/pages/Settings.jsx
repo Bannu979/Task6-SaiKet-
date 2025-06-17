@@ -37,7 +37,8 @@ const Settings = () => {
     const loadSettings = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/settings', {
+        const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+        const response = await fetch(`${baseUrl}/api/settings`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -82,14 +83,15 @@ const Settings = () => {
     };
 
     if (user) {
-    loadSettings();
+      loadSettings();
     }
   }, [user, getAuthHeader, navigate]);
 
   const handleSaveChanges = async () => {
     try {
       setSaving(true);
-      const response = await fetch('http://localhost:5000/api/settings', {
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+      const response = await fetch(`${baseUrl}/api/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
