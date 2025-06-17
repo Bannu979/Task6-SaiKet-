@@ -17,7 +17,8 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://task6-sai-ket-o4so.vercel.app'
+    'https://task6-sai-ket-o4so.vercel.app',
+    'https://task6-sai-ket-o4so-40pokravv-bprabhas979-gmailcoms-projects.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
